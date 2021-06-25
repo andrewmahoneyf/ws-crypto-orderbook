@@ -2,7 +2,8 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "postinstall": "patch-package",
+    "link:common": "yarn workspace common link && yarn workspace mobile link common",
+    "postinstall": "patch-package && yarn link:common",
     "build:web": "yarn workspace web build",
     "lint:common": "yarn workspace common lint",
     "lint:mobile": "yarn workspace mobile lint",

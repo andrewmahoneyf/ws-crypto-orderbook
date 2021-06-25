@@ -5,15 +5,25 @@
  * @format
  */
 const path = require('path');
+const {
+  applyConfigForLinkedDependencies,
+} = require('@carimus/metro-symlinked-deps');
 
-module.exports = {
-  transformer: {
-    getTransformOptions: async () => ({
-      transform: {
-        experimentalImportSupport: false,
-        inlineRequires: true,
-      },
-    }),
+module.exports = applyConfigForLinkedDependencies(
+  {
+    transformer: {
+      getTransformOptions: async () => ({
+        transform: {
+          experimentalImportSupport: false,
+          inlineRequires: true,
+        },
+      }),
+    },
+    watchFolders: [path.resolve(__dirname, '../../node_modules')],
   },
-  watchFolders: [path.resolve(__dirname, '../../node_modules')],
-};
+  {
+    projectRoot: __dirname,
+    additionalWatchFolders: ['../../node_modules'],
+    resolveNodeModulesAtRoot: true,
+  },
+);
