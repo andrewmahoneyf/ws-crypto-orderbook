@@ -17,8 +17,6 @@ import {
 import App from './App';
 import { name as appName } from './app.json';
 
-// const store = {};
-
 const ReduxApp: React.FC = () => {
   const isDarkMode = useColorScheme() === 'dark';
 

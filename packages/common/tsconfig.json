@@ -1,7 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "jsx": "react-jsx",
+    "baseUrl": "src",
+    "jsx": "react",
     "lib": ["dom", "dom.iterable", "esnext"]
   },
   "include": ["**/*.ts", "**/*.tsx"],

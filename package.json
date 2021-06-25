@@ -4,11 +4,13 @@
   "scripts": {
     "postinstall": "patch-package",
     "build:web": "yarn workspace web build",
+    "lint:common": "yarn workspace common lint",
     "lint:mobile": "yarn workspace mobile lint",
     "start:metro": "yarn workspace mobile start",
     "start:android": "yarn workspace mobile android",
     "start:ios": "yarn workspace mobile ios",
     "start:web": "yarn workspace web start",
+    "test:common": "yarn workspace common test",
     "test:mobile": "yarn workspace mobile test",
     "test:web": "yarn workspace web test",
     "recycle": "find . -type dir -name node_modules | xargs rm -rf && yarn"

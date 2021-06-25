@@ -4,11 +4,12 @@ const path = require('path');
  * without ejecting.
  */
 const { getLoader, loaderByName } = require('@craco/craco');
+
 const absolutePath = path.join(__dirname, '../common');
 
 module.exports = {
   webpack: {
-    configure: (webpackConfig, { env, paths }) => {
+    configure: webpackConfig => {
       // https://medium.com/frontend-digest/using-create-react-app-in-a-monorepo-a4e6f25be7aa
       const { isFound, match } = getLoader(
         webpackConfig,
