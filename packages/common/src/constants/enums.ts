@@ -5,3 +5,13 @@ export enum ReadyState {
   CLOSING = 2,
   CLOSED = 3,
 }
+
+export enum WebSocketEvent {
+  SUBSCRIBE = 'subscribe',
+  UNSUBSCRIBE = 'unsubscribe',
+}
+
+export enum CryptoUSDPair {
+  BTC = 'PI_XBTUSD',
+  ETH = 'PI_ETHUSD',
+}

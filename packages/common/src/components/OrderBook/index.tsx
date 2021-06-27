@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import OrderBookProvider, { OrderBookContext } from '../OrderBookProvider';
-import { OrderBookState } from '../../types/orderBook';
 
 const OrderBook = () => {
   const context = useContext(OrderBookContext);

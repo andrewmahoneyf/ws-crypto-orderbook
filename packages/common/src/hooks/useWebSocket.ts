@@ -13,8 +13,6 @@ const useWebSocket = (
   shouldConnect = true,
 ): WebSocketHook => {
   const [readyState, setReadyState] = useState<ReadyState>(ReadyState.CLOSED);
-  const [lastMessage, setLastMessage] =
-    useState<WebSocketEventMap['message']>();
   const [messageQueue, setMessageQueue] = useState<WebSocketMessage[]>([]);
 
   const webSocketRef = useRef<WebSocket>();
@@ -51,7 +49,6 @@ const useWebSocket = (
     };
     webSocketRef.current.onmessage = (event: WebSocketEventMap['message']) => {
       if (onMessage) onMessage(event);
-      setLastMessage(event);
     };
   }, [url, onClose, onError, onMessage, onOpen, retryOnError]);
 
@@ -114,7 +111,6 @@ const useWebSocket = (
   }, [readyState, messageQueue, sendMessage]);
 
   return {
-    lastMessage,
     readyState,
     sendMessage,
   };
