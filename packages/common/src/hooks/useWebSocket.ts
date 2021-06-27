@@ -90,18 +90,18 @@ const useWebSocket = (
     reconnectRef.current = reconnect;
   }, [reconnectLimit, connect, reconnectInterval, disconnect]);
 
-  const sendMessage: SendMessage = useCallback(
-    message => {
-      if (webSocketRef.current && readyState === ReadyState.OPEN) {
-        if (webSocketRef.current instanceof WebSocket === false)
-          throw new Error('WebSocket not properly initialized');
-        webSocketRef.current.send(message);
-      } else {
-        setMessageQueue(prevState => [...prevState, message]);
-      }
-    },
-    [readyState],
-  );
+  const sendMessage: SendMessage = useCallback(message => {
+    if (
+      webSocketRef.current &&
+      webSocketRef.current?.readyState === ReadyState.OPEN
+    ) {
+      if (webSocketRef.current instanceof WebSocket === false)
+        throw new Error('WebSocket not properly initialized');
+      webSocketRef.current.send(message);
+    } else {
+      setMessageQueue(prevState => [...prevState, message]);
+    }
+  }, []);
 
   useEffect(() => {
     if (readyState === ReadyState.OPEN && messageQueue.length) {

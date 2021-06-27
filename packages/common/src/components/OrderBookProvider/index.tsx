@@ -2,22 +2,23 @@ import React, {
   createContext,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import useWebSocket from '../../hooks/useWebSocket';
+import { useAppSelector } from '../../hooks/react-redux';
+import { selectFeedPair } from '../../state/selectors';
+import { useInterval, useWebSocket } from '../../hooks';
 import {
   CONTEXT_INITIAL_STATE,
   DEFAULT_OPTIONS,
   FEED,
   ORDER_WS_URL,
+  RERENDER_FREQUENCY,
 } from '../../constants/orderBook';
+import { ContextUpdater } from '../../types/orderBook';
 import { Options } from '../../types/webSocket';
-import {
-  CryptoUSDPair,
-  ReadyState,
-  WebSocketEvent,
-} from '../../constants/enums';
+import { ReadyState, WebSocketEvent } from '../../constants/enums';
 import parseOrderMessage from '../../utils/parseOrderMessage';
 import reduceOrders from '../../utils/reduceOrders';
 
@@ -28,31 +29,31 @@ interface OrderBookProviderProps {
 }
 
 const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
-  const [selectedPair, setSelectedPair] = useState(CryptoUSDPair.BTC);
-  const [context, setContext] = useState(CONTEXT_INITIAL_STATE);
-  const asksRef = useRef(CONTEXT_INITIAL_STATE.asks);
-  const bidsRef = useRef(CONTEXT_INITIAL_STATE.bids);
+  const selectedPair = useAppSelector(selectFeedPair);
+  const contextRef = useRef(CONTEXT_INITIAL_STATE);
   const [shouldConnect, setShouldConnect] = useState(false);
+  const [renderKey, setRenderKey] = useState(0);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const context = useMemo(() => contextRef.current, [renderKey]);
+
+  useInterval(() => {
+    // useRef avoids rerendering while still storing state updates
+    // we can now manually trigger context update at any desired frequency
+    setRenderKey(Math.random());
+  }, RERENDER_FREQUENCY);
+
+  const setContext = (values: ContextUpdater) => {
+    contextRef.current = { ...contextRef.current, ...values };
+  };
 
   useEffect(() => {
     // wait for component to mount before instantiating
     setShouldConnect(true);
   }, []);
 
-  const handleAsks = (newAsks: [number, number][]) => {
-    asksRef.current = reduceOrders(asksRef.current, newAsks);
-    return asksRef.current;
-  };
-
-  const handleBids = (newBids: [number, number][]) => {
-    bidsRef.current = reduceOrders(bidsRef.current, newBids);
-    return bidsRef.current;
-  };
-
   const onOpen = useCallback((event: WebSocketEventMap['open']) => {
     console.log('onOpen', event);
-    const ws = event.currentTarget as WebSocket;
-    setContext(prevState => ({ ...prevState, ws }));
+    setContext({ ws: event.currentTarget as WebSocket });
   }, []);
 
   const onClose = useCallback((event: WebSocketEventMap['close']) => {
@@ -61,21 +62,27 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   }, []);
 
   const onMessage = useCallback((event: WebSocketEventMap['message']) => {
-    console.log('onMessage', event);
     const parsedResult = parseOrderMessage(event.data);
-    if (parsedResult.error)
-      setContext(prevState => ({
-        ...prevState,
-        error: parsedResult.error?.message,
-      }));
-    else {
-      console.log('parsedResult', parsedResult);
-      setContext(prevState => ({
-        ...prevState,
-        numLevels: parsedResult.value?.numLevels ?? prevState.numLevels,
-        asks: handleAsks(parsedResult.value?.asks ?? []),
-        bids: handleBids(parsedResult.value?.bids ?? []),
-      }));
+    if (parsedResult.error) setContext({ error: parsedResult.error?.message });
+    else if (parsedResult.value) {
+      const {
+        asks,
+        bids,
+        numLevels,
+        product_id: productId,
+      } = parsedResult.value;
+      const { asks: currAsks, bids: currBids } = contextRef.current;
+      setContext({
+        asks: reduceOrders(currAsks, asks ?? []),
+        bids: reduceOrders(currBids, bids ?? []),
+        error: null,
+        productId,
+        ...(numLevels && { numLevels }),
+      });
+      // trigger re-render on first valid data received
+      if (numLevels) setRenderKey(1);
+    } else {
+      console.log('onMessage', event);
     }
   }, []);
 
@@ -96,38 +103,46 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     shouldConnect,
   );
 
-  const subscribe = useCallback(() => {
-    sendMessage(
-      JSON.stringify({
-        event: WebSocketEvent.SUBSCRIBE,
-        feed: FEED,
-        product_ids: [selectedPair],
-      }),
-    );
-  }, [selectedPair, sendMessage]);
+  const subscribe = useCallback(
+    (pair?: string) => {
+      sendMessage(
+        JSON.stringify({
+          event: WebSocketEvent.SUBSCRIBE,
+          feed: FEED,
+          product_ids: [pair || selectedPair],
+        }),
+      );
+    },
+    [selectedPair, sendMessage],
+  );
 
-  const unsubscribe = useCallback(() => {
-    sendMessage(
-      JSON.stringify({
-        event: WebSocketEvent.UNSUBSCRIBE,
-        feed: FEED,
-        product_ids: [selectedPair],
-      }),
-    );
-  }, [selectedPair, sendMessage]);
-
-  const handleTogglePair = (newPair: CryptoUSDPair) => {
-    unsubscribe();
-    setSelectedPair(newPair);
-  };
+  const unsubscribe = useCallback(
+    (pair?: string) => {
+      sendMessage(
+        JSON.stringify({
+          event: WebSocketEvent.UNSUBSCRIBE,
+          feed: FEED,
+          product_ids: [pair || selectedPair],
+        }),
+      );
+    },
+    [selectedPair, sendMessage],
+  );
 
   useEffect(() => {
-    const readyString = ReadyState[readyState];
-    setContext(prevState => ({ ...prevState, readyState: readyString }));
+    setContext({ readyState: ReadyState[readyState] });
     if (readyState === ReadyState.OPEN) {
       subscribe();
     }
-  }, [readyState, selectedPair, subscribe]);
+  }, [readyState, subscribe]);
+
+  useEffect(() => {
+    const { productId } = contextRef.current;
+    if (productId !== selectedPair) {
+      unsubscribe(productId);
+      subscribe(selectedPair);
+    }
+  }, [selectedPair, subscribe, unsubscribe]);
 
   return (
     <OrderBookContext.Provider value={context}>

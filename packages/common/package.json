@@ -8,7 +8,9 @@
     "test": "jest"
   },
   "dependencies": {
-    "@reduxjs/toolkit": "^1.5.1"
+    "@material-ui/core": "^4.11.4",
+    "@reduxjs/toolkit": "^1.5.1",
+    "react-native-elements": "^3.4.2"
   },
   "devDependencies": {
     "eslint": "^7.14.0",

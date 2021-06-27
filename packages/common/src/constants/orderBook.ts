@@ -6,6 +6,8 @@ export const ORDER_WS_URL = 'wss://www.cryptofacilities.com/ws/v1';
 
 export const FEED = 'book_ui_1';
 
+export const RERENDER_FREQUENCY = 3e3;
+
 export const DEFAULT_OPTIONS: Options = {
   reconnectLimit: 3,
   reconnectInterval: 2e3,
@@ -17,6 +19,7 @@ export const CONTEXT_INITIAL_STATE: Context = {
   bids: {} as OrdersPriceMap,
   error: null,
   numLevels: undefined,
+  productId: undefined,
   readyState: ReadyState[ReadyState.UNINSTANTIATED],
   ws: undefined,
 };

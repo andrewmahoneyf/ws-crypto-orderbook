@@ -7,7 +7,19 @@ export interface Context {
   bids: OrdersPriceMap;
   error?: string | null;
   numLevels?: number;
+  productId?: string;
   readyState: string;
+  ws?: WebSocket;
+}
+
+// used to check setContext param values without defining required keys
+export interface ContextUpdater {
+  asks?: OrdersPriceMap;
+  bids?: OrdersPriceMap;
+  error?: string | null;
+  numLevels?: number;
+  productId?: string;
+  readyState?: string;
   ws?: WebSocket;
 }
 
