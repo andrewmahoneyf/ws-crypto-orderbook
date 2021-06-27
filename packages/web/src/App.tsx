@@ -1,5 +1,5 @@
 import React from 'react';
-import { Counter } from 'common';
+import { Counter, OrderBook } from 'common';
 import logo from './logo.svg';
 import './App.css';
 
@@ -8,6 +8,7 @@ function App(): JSX.Element {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
+        <OrderBook />
         <Counter />
         <p>
           Edit <code>src/App.tsx</code> and save to reload.
