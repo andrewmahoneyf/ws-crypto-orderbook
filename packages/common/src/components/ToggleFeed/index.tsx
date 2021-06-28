@@ -1,5 +1,5 @@
 import React from 'react';
-import { useAppDispatch } from '../../hooks/react-redux';
+import { useAppDispatch } from '../../hooks';
 import { toggle } from './feedSlice';
 import IconButton from '../IconButton';
 

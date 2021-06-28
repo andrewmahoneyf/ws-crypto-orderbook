@@ -1,6 +1,7 @@
 import React from 'react';
 import { NativeSyntheticEvent, NativeTouchEvent } from 'react-native';
-import { Button as NativeButton, Icon } from 'react-native-elements';
+import { Button as NativeButton } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 interface ButtonProps {
   iconName: string;
@@ -16,7 +17,7 @@ const IconButton: React.FC<ButtonProps> = ({
   return (
     <NativeButton
       accessibilityLabel={`${title} button`}
-      icon={<Icon name={iconName} type="material" size={15} color="white" />}
+      icon={<Icon name={iconName.replace('_', '-')} size={15} color="white" />}
       onPress={onClick}
       title={title}
     />
