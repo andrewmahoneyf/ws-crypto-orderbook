@@ -46,7 +46,6 @@ const StyledInput = withStyles((theme: Theme) =>
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     header: {
-      width: '100%',
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -60,7 +59,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const OrderBookHeader: React.FC = () => {
+const OrderBookHeader = (): JSX.Element => {
   const classes = useStyles();
   const dispatch = useAppDispatch();
   const grouping = useAppSelector(selectOrderbookGroup);
