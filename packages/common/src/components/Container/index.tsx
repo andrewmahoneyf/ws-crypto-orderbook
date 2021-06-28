@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ContainerProps {
   children: React.ReactElement | React.ReactElement[];
-  style: React.CSSProperties;
+  style?: React.CSSProperties;
 }
 
 const Container: React.FC<ContainerProps> = ({ children, style }) => {

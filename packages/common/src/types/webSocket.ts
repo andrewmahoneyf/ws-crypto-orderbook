@@ -20,6 +20,7 @@ export type WebSocketMessage =
 export type SendMessage = (message: WebSocketMessage) => void;
 
 export interface WebSocketHook {
+  disconnect: () => void;
   readyState: ReadyState;
   sendMessage: SendMessage;
 }

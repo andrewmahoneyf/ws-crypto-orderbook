@@ -3,7 +3,7 @@ import { View, ViewStyle } from 'react-native';
 
 interface ContainerProps {
   children: React.ReactElement | React.ReactElement[];
-  style: ViewStyle;
+  style?: ViewStyle;
 }
 
 const Container: React.FC<ContainerProps> = ({ children, style }) => {

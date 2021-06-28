@@ -49,6 +49,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   useEffect(() => {
     // wait for component to mount before instantiating
     setShouldConnect(true);
+    setContext({ setShouldConnect });
   }, []);
 
   const onOpen = useCallback((event: WebSocketEventMap['open']) => {
@@ -58,7 +59,8 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
 
   const onClose = useCallback((event: WebSocketEventMap['close']) => {
     console.log('onClose', event);
-    setContext(CONTEXT_INITIAL_STATE);
+    // avoid overriding setShouldConnect so we can trigger reconnect externally
+    setContext({ ...CONTEXT_INITIAL_STATE, setShouldConnect });
   }, []);
 
   const onMessage = useCallback((event: WebSocketEventMap['message']) => {
@@ -97,7 +99,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     onMessage,
     onOpen,
   };
-  const { readyState, sendMessage } = useWebSocket(
+  const { disconnect, readyState, sendMessage } = useWebSocket(
     ORDER_WS_URL,
     options,
     shouldConnect,
@@ -128,6 +130,14 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     },
     [selectedPair, sendMessage],
   );
+
+  useEffect(() => {
+    const handleDisconnect = () => {
+      unsubscribe();
+      disconnect();
+    };
+    setContext({ disconnect: handleDisconnect });
+  }, [disconnect, unsubscribe]);
 
   useEffect(() => {
     setContext({ readyState: ReadyState[readyState] });

@@ -1,7 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "baseUrl": "src",
+    "baseUrl": "./src",
+    "paths": {
+      "@app/*": ["app/*"],
+      "@components/*": ["components/*"],
+      "@constants/*": ["constants/*"],
+      "@hooks/*": ["hooks/*"],
+      "@state/*": ["state/*"],
+      "@types/*": ["types/*"],
+      "@utils/*": ["utils/*"]
+    },
     "jsx": "react",
     "lib": ["dom", "dom.iterable", "esnext"]
   },

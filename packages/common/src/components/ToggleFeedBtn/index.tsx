@@ -9,7 +9,7 @@ const ToggleFeed = (): JSX.Element => {
     <IconButton
       iconName="swap_horiz"
       onClick={() => dispatch(toggleFeed())}
-      style={{ backgroundColor: '#5D45DC', color: 'white' }}
+      style={{ backgroundColor: '#5D45DC' }}
       title="Toggle Feed"
     />
   );
