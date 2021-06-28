@@ -1,3 +1,10 @@
+import { CryptoUSDPair } from '../constants/enums';
+
+export interface OrderbookReduxState {
+  pair: CryptoUSDPair;
+  grouping: number;
+}
+
 export interface OrdersPriceMap {
   [price: number]: number;
 }

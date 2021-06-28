@@ -7,7 +7,7 @@ import React, {
   useState,
 } from 'react';
 import { useAppSelector } from '../../hooks/react-redux';
-import { selectFeedPair } from '../../state/selectors';
+import { selectOrderbookPair } from '../../state/selectors';
 import { useInterval, useWebSocket } from '../../hooks';
 import {
   CONTEXT_INITIAL_STATE,
@@ -29,7 +29,7 @@ interface OrderBookProviderProps {
 }
 
 const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
-  const selectedPair = useAppSelector(selectFeedPair);
+  const selectedPair = useAppSelector(selectOrderbookPair);
   const contextRef = useRef(CONTEXT_INITIAL_STATE);
   const [shouldConnect, setShouldConnect] = useState(false);
   const [renderKey, setRenderKey] = useState(0);

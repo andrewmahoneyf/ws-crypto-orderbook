@@ -1,6 +1,6 @@
 import { Options } from '../types/webSocket';
 import { Context, OrdersPriceMap } from '../types/orderBook';
-import { ReadyState } from './enums';
+import { ReadyState, CryptoUSDPair } from './enums';
 
 export const ORDER_WS_URL = 'wss://www.cryptofacilities.com/ws/v1';
 
@@ -22,4 +22,9 @@ export const CONTEXT_INITIAL_STATE: Context = {
   productId: undefined,
   readyState: ReadyState[ReadyState.UNINSTANTIATED],
   ws: undefined,
+};
+
+export const GROUP_OPTIONS = {
+  [CryptoUSDPair.BTC]: [0.5, 1, 2.5],
+  [CryptoUSDPair.ETH]: [0.05, 0.1, 0.25],
 };

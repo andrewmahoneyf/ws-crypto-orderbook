@@ -1,12 +1,13 @@
 import React from 'react';
 import { App as OrderBookApp } from 'common';
+import Container from '@material-ui/core/Container';
 import './App.css';
 
 function App(): JSX.Element {
   return (
-    <div className="App">
+    <Container classes={{ root: 'App' }}>
       <OrderBookApp />
-    </div>
+    </Container>
   );
 }
 

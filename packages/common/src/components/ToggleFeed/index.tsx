@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAppDispatch } from '../../hooks';
-import { toggle } from './feedSlice';
+import { toggleFeed } from '../../state/orderbookSlice';
 import IconButton from '../IconButton';
 
 const ToggleFeed = (): JSX.Element => {
@@ -8,7 +8,7 @@ const ToggleFeed = (): JSX.Element => {
   return (
     <IconButton
       iconName="swap_horiz"
-      onClick={() => dispatch(toggle())}
+      onClick={() => dispatch(toggleFeed())}
       title="Toggle Feed"
     />
   );

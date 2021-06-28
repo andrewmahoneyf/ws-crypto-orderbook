@@ -1,10 +1,8 @@
 import { configureStore } from '@reduxjs/toolkit';
-import counterReducer from '../components/counter/counterSlice';
-import feedReducer from '../components/ToggleFeed/feedSlice';
+import orderbookReducer from './orderbookSlice';
 
 export const store = configureStore({
   reducer: {
-    counter: counterReducer,
-    feed: feedReducer,
+    orderbook: orderbookReducer,
   },
 });

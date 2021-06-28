@@ -1,5 +1,14 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types/redux';
-import { CryptoUSDPair } from '../constants/enums';
 
-export const selectFeedPair = (state: RootState): CryptoUSDPair =>
-  state.feed.pair;
+const orderbookSelector = (state: RootState) => state.orderbook;
+
+export const selectOrderbookPair = createSelector(
+  orderbookSelector,
+  orderbook => orderbook.pair,
+);
+
+export const selectOrderbookGroup = createSelector(
+  orderbookSelector,
+  orderbook => orderbook.grouping,
+);
