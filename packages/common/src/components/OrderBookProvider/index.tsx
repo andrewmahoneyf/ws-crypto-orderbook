@@ -61,18 +61,19 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     console.log('onClose', event);
     // avoid overriding setShouldConnect so we can trigger reconnect externally
     setContext({ ...CONTEXT_INITIAL_STATE, setShouldConnect });
+    setRenderKey(Math.random());
   }, []);
 
   const onMessage = useCallback((event: WebSocketEventMap['message']) => {
     const parsedResult = parseOrderMessage(event.data);
     if (parsedResult.error) setContext({ error: parsedResult.error?.message });
-    else if (parsedResult.value) {
+    else if (parsedResult.orders) {
       const {
         asks,
         bids,
         numLevels,
         product_id: productId,
-      } = parsedResult.value;
+      } = parsedResult.orders;
       const { asks: currAsks, bids: currBids } = contextRef.current;
       setContext({
         asks: reduceOrders(currAsks, asks ?? []),
@@ -82,9 +83,16 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
         ...(numLevels && { numLevels }),
       });
       // trigger re-render on first valid data received
-      if (numLevels) setRenderKey(1);
+      if (numLevels) setRenderKey(Math.random());
     } else {
       console.log('onMessage', event);
+      if (parsedResult.data?.event) {
+        setContext({
+          bids: CONTEXT_INITIAL_STATE.bids,
+          asks: CONTEXT_INITIAL_STATE.asks,
+        });
+        setRenderKey(Math.random());
+      }
     }
   }, []);
 

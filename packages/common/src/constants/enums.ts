@@ -15,3 +15,8 @@ export enum CryptoUSDPair {
   BTC = 'PI_XBTUSD',
   ETH = 'PI_ETHUSD',
 }
+
+export enum OrderType {
+  BIDS = 'bids',
+  ASKS = 'asks',
+}

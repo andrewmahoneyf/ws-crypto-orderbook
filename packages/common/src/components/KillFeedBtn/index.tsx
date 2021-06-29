@@ -1,10 +1,10 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, memo } from 'react';
 import { OrderBookContext } from '../OrderBookProvider';
 import IconButton from '../IconButton';
 import { ReadyState } from '../../constants/enums';
 import { DEFAULT_OPTIONS } from '../../constants/orderBook';
 
-const KillFeedBtn = (): JSX.Element => {
+const KillFeedBtn = memo((): JSX.Element => {
   const [btnState, setBtnState] = useState('live');
   const context = useContext(OrderBookContext);
 
@@ -29,6 +29,6 @@ const KillFeedBtn = (): JSX.Element => {
       title={btnState === 'live' ? 'Kill Feed' : 'Restart Feed'}
     />
   );
-};
+});
 
 export default KillFeedBtn;

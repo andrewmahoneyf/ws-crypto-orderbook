@@ -6,7 +6,9 @@ export const ORDER_WS_URL = 'wss://www.cryptofacilities.com/ws/v1';
 
 export const FEED = 'book_ui_1';
 
-export const RERENDER_FREQUENCY = 3e3;
+export const RERENDER_FREQUENCY = 5e3;
+
+export const DISPLAY_LEVELS = 15;
 
 export const DEFAULT_OPTIONS: Options = {
   reconnectLimit: 3,

@@ -6,14 +6,18 @@ function isExpectedType(o: OrderBookMessage | WsEvent): o is OrderBookMessage {
   return 'asks' in o && 'bids' in o;
 }
 
-type ParseResult = { value?: OrderBookMessage; error?: Error };
+type ParseResult = {
+  orders?: OrderBookMessage;
+  data?: WsEvent;
+  error?: Error;
+};
 
 const parseJSON = (text: string): ParseResult => {
   try {
-    const value = JSON.parse(text) as OrderBookMessage | WsEvent;
-    if (isExpectedType(value)) return { value };
-    if (value.event === 'alert') throw new Error(value.message);
-    return {};
+    const data = JSON.parse(text) as OrderBookMessage | WsEvent;
+    if (isExpectedType(data)) return { orders: data };
+    if (data.event === 'alert') throw new Error(data.message);
+    return { data };
   } catch (err) {
     return {
       error: err as Error,

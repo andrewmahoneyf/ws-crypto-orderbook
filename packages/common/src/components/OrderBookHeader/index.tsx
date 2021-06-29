@@ -21,9 +21,7 @@ import { GROUP_OPTIONS } from '../../constants/orderBook';
 const StyledInput = withStyles((theme: Theme) =>
   createStyles({
     root: {
-      '& svg': {
-        color: 'white',
-      },
+      '& svg': { color: 'white' },
     },
     input: {
       borderRadius: 4,

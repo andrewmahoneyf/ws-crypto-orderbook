@@ -10,6 +10,12 @@ export interface OrdersPriceMap {
   [price: number]: number;
 }
 
+export interface OrderLevel {
+  price: number;
+  size: number;
+  total: number;
+}
+
 export interface Context {
   asks: OrdersPriceMap;
   bids: OrdersPriceMap;
@@ -40,5 +46,5 @@ export interface OrderBookMessage {
   bids: [number, number][];
   feed: string;
   numLevels?: number;
-  product_id: string;
+  product_id: CryptoUSDPair;
 }
