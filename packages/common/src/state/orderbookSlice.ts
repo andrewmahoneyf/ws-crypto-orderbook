@@ -14,22 +14,22 @@ export const orderbookSlice = createSlice({
   name: 'orderbook',
   initialState,
   reducers: {
-    toggleFeed: state => {
-      if (state.pair === CryptoUSDPair.BTC) state.pair = CryptoUSDPair.ETH;
-      else state.pair = CryptoUSDPair.BTC;
-      // eslint-disable-next-line prefer-destructuring
-      state.grouping = GROUP_OPTIONS[state.pair][0];
-    },
     setGrouping: (state, action: PayloadAction<number>) => {
       state.grouping = action.payload;
     },
     setOrderbookEnabled: (state, action: PayloadAction<boolean>) => {
       state.enabled = action.payload;
     },
+    toggleFeed: state => {
+      if (state.pair === CryptoUSDPair.BTC) state.pair = CryptoUSDPair.ETH;
+      else state.pair = CryptoUSDPair.BTC;
+      // eslint-disable-next-line prefer-destructuring
+      state.grouping = GROUP_OPTIONS[state.pair][0];
+    },
   },
 });
 
-export const { toggleFeed, setGrouping, setOrderbookEnabled } =
+export const { setGrouping, setOrderbookEnabled, toggleFeed } =
   orderbookSlice.actions;
 
 export default orderbookSlice.reducer;

@@ -1,6 +1,8 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types/redux';
 
+export const selectSnackbarAlert = (state: RootState) => state.snackbar.alert;
+
 const orderbookSelector = (state: RootState) => state.orderbook;
 
 export const selectOrderbookEnabled = createSelector(

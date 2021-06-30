@@ -25,4 +25,9 @@ export interface WebSocketHook {
   sendMessage: SendMessage;
 }
 
-export type WsEvent = { event?: string; message?: string };
+export type WsEvent = {
+  event?: string;
+  message?: string;
+  feed?: string;
+  product_ids?: string[];
+};

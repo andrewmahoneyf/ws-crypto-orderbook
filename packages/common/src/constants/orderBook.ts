@@ -19,7 +19,6 @@ export const DEFAULT_OPTIONS: Options = {
 export const CONTEXT_INITIAL_STATE: Context = {
   asks: {} as OrdersPriceMap,
   bids: {} as OrdersPriceMap,
-  error: null,
   numLevels: undefined,
   productId: undefined,
   readyState: ReadyState[ReadyState.UNINSTANTIATED],

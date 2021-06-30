@@ -12,6 +12,7 @@ import {
   selectOrderbookPair,
 } from '../../state/selectors';
 import { setOrderbookEnabled } from '../../state/orderbookSlice';
+import { setSnackbarAlert } from '../../state/snackbarSlice';
 import { useInterval, useWebSocket } from '../../hooks';
 import {
   CONTEXT_INITIAL_STATE,
@@ -22,7 +23,14 @@ import {
 } from '../../constants/orderBook';
 import { ContextUpdater, OrderBookMessage } from '../../types/orderBook';
 import { Options, WsEvent } from '../../types/webSocket';
-import { EventType, ReadyState, WebSocketEvent } from '../../constants/enums';
+import {
+  CryptoUSDPair,
+  EventType,
+  ReadyState,
+  Snackbar,
+  StatusCode,
+  WebSocketEvent,
+} from '../../constants/enums';
 import parseOrderMessage from '../../utils/parseOrderMessage';
 import reduceOrders from '../../utils/reduceOrders';
 
@@ -70,46 +78,93 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     if (numLevels) setRenderKey(Math.random());
   }, []);
 
-  const handleEventMessage = useCallback((data?: WsEvent) => {
-    console.log('onMessage', data);
-    if (data?.event === EventType.SUBSCRIBED) {
-      // clear context and render app on subscribe for toggle feed
-      setContext({
-        bids: CONTEXT_INITIAL_STATE.bids,
-        asks: CONTEXT_INITIAL_STATE.asks,
-      });
+  const handleEventMessage = useCallback(
+    (data?: WsEvent) => {
+      if (data?.event === EventType.SUBSCRIBED) {
+        // clear context and render app on subscribe for toggle feed
+        setContext({
+          bids: CONTEXT_INITIAL_STATE.bids,
+          asks: CONTEXT_INITIAL_STATE.asks,
+        });
+        setRenderKey(Math.random());
+        dispatch(
+          setSnackbarAlert({
+            type: Snackbar.SUCCESS,
+            message: `Subscribed to ${data.product_ids?.toString() as string}`,
+          }),
+        );
+      }
+      if (data?.event === EventType.UNSUBSCRIBED) {
+        dispatch(
+          setSnackbarAlert({
+            type: Snackbar.INFO,
+            message: `Unsubscribed from ${
+              data.product_ids?.toString() as string
+            }`,
+          }),
+        );
+      }
+    },
+    [dispatch],
+  );
+
+  const onOpen = useCallback(
+    (event: WebSocketEventMap['open']) => {
+      setContext({ ws: event.currentTarget as WebSocket });
+      dispatch(
+        setSnackbarAlert({
+          type: Snackbar.INFO,
+          message: 'Orderbook websocket opened',
+        }),
+      );
+    },
+    [dispatch],
+  );
+
+  const onClose = useCallback(
+    (event: WebSocketEventMap['close']) => {
+      setContext(CONTEXT_INITIAL_STATE);
       setRenderKey(Math.random());
-    }
-  }, []);
-
-  const onOpen = useCallback((event: WebSocketEventMap['open']) => {
-    console.log('onOpen', event);
-    setContext({ ws: event.currentTarget as WebSocket });
-  }, []);
-
-  const onClose = useCallback((event: WebSocketEventMap['close']) => {
-    console.log('onClose', event);
-    setContext(CONTEXT_INITIAL_STATE);
-    setRenderKey(Math.random());
-  }, []);
+      dispatch(
+        setSnackbarAlert({
+          type: Snackbar.WARNING,
+          message: `Orderbook websocket closed: ${StatusCode[event.code]}`,
+        }),
+      );
+    },
+    [dispatch],
+  );
 
   const onMessage = useCallback(
     (event: WebSocketEventMap['message']) => {
       const parsedResult = parseOrderMessage(event.data);
       if (parsedResult.error)
-        setContext({ error: parsedResult.error?.message });
+        dispatch(
+          setSnackbarAlert({
+            type: Snackbar.ERROR,
+            message: parsedResult.error?.message,
+          }),
+        );
       else if (parsedResult.orders) {
         handleOrderMessage(parsedResult.orders);
       } else {
         handleEventMessage(parsedResult.data);
       }
     },
-    [handleOrderMessage, handleEventMessage],
+    [dispatch, handleOrderMessage, handleEventMessage],
   );
 
-  const onError = useCallback((event: WebSocketEventMap['error']) => {
-    console.log('onError', event);
-  }, []);
+  const onError = useCallback(
+    (event: WebSocketEventMap['error']) => {
+      dispatch(
+        setSnackbarAlert({
+          type: Snackbar.ERROR,
+          message: 'Unknown error occured',
+        }),
+      );
+    },
+    [dispatch],
+  );
 
   const options: Options = {
     ...DEFAULT_OPTIONS,
@@ -125,45 +180,44 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   );
 
   const subscribe = useCallback(
-    (pair?: string) => {
+    (pair: CryptoUSDPair) => {
       sendMessage(
         JSON.stringify({
           event: WebSocketEvent.SUBSCRIBE,
           feed: FEED,
-          product_ids: [pair || selectedPair],
+          product_ids: [pair],
         }),
       );
     },
-    [selectedPair, sendMessage],
+    [sendMessage],
   );
 
   const unsubscribe = useCallback(
-    (pair?: string) => {
+    (pair: CryptoUSDPair) => {
       sendMessage(
         JSON.stringify({
           event: WebSocketEvent.UNSUBSCRIBE,
           feed: FEED,
-          product_ids: [pair || selectedPair],
+          product_ids: [pair],
         }),
       );
     },
-    [selectedPair, sendMessage],
+    [sendMessage],
   );
-
-  useEffect(() => {
-    // add readyState to context on update
-    setContext({ readyState: ReadyState[readyState] });
-    if (readyState === ReadyState.OPEN) subscribe();
-  }, [readyState, subscribe]);
 
   useEffect(() => {
     // update subscriptions on toggle feed
     const { productId } = contextRef.current;
     if (productId !== selectedPair) {
-      unsubscribe(productId);
-      subscribe(selectedPair);
+      if (productId) unsubscribe(productId as CryptoUSDPair);
     }
-  }, [selectedPair, subscribe, unsubscribe]);
+  }, [selectedPair, unsubscribe]);
+
+  useEffect(() => {
+    // add readyState to context on update
+    setContext({ readyState: ReadyState[readyState] });
+    if (readyState === ReadyState.OPEN) subscribe(selectedPair);
+  }, [readyState, selectedPair, subscribe]);
 
   useEffect(() => {
     // trigger error if orderbook is manually disabled
@@ -171,11 +225,11 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     if (!orderbookEnabled && ws) {
       ws.dispatchEvent(new Event('error'));
       if (DEFAULT_OPTIONS.retryOnError) {
-        unsubscribe();
+        unsubscribe(selectedPair);
         disconnect();
       }
     }
-  }, [orderbookEnabled, unsubscribe, disconnect]);
+  }, [disconnect, orderbookEnabled, selectedPair, unsubscribe]);
 
   return (
     <OrderBookContext.Provider value={context}>

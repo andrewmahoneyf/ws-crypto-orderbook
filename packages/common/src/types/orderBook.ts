@@ -19,7 +19,6 @@ export interface OrderLevel {
 export interface Context {
   asks: OrdersPriceMap;
   bids: OrdersPriceMap;
-  error?: string | null;
   numLevels?: number;
   productId?: string;
   readyState: string;

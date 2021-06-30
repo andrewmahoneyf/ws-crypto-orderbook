@@ -1,9 +1,9 @@
 export enum ReadyState {
   UNINSTANTIATED = -1,
-  CONNECTING = 0,
-  OPEN = 1,
-  CLOSING = 2,
-  CLOSED = 3,
+  CONNECTING,
+  OPEN,
+  CLOSING,
+  CLOSED,
 }
 
 export enum WebSocketEvent {
@@ -25,4 +25,27 @@ export enum EventType {
   SUBSCRIBED = 'subscribed',
   UNSUBSCRIBED = 'unsubscribed',
   ALERT = 'alert',
+}
+
+export enum Snackbar {
+  ERROR = 'error',
+  WARNING = 'warning',
+  INFO = 'info',
+  SUCCESS = 'success',
+}
+
+export enum StatusCode {
+  'Normal Closure' = 1000,
+  'Going Away',
+  'Protocol error',
+  'Unsupported Data',
+  '---Reserved----',
+  'No Status Rcvd',
+  'Abnormal Closure',
+  'Invalid frame payload data',
+  'Policy Violation',
+  'Message Too Big',
+  'Mandatory Ext.',
+  'Internal Server Error',
+  'TLS handshake',
 }
