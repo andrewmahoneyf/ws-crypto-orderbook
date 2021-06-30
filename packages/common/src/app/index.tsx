@@ -6,8 +6,7 @@ import OrderBookHeader from '../components/OrderBookHeader';
 import OrderBookProvider from '../components/OrderBookProvider';
 
 const App = (): JSX.Element => (
-  <Container
-    style={{ backgroundColor: 'rgb(43 50 63)', width: '100%', padding: 5 }}>
+  <Container style={{ backgroundColor: '#2b323f', width: '100%', padding: 5 }}>
     <OrderBookHeader />
     <OrderBookProvider>
       <OrderBook />

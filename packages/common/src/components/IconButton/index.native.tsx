@@ -19,16 +19,14 @@ const IconButton: React.FC<ButtonProps> = ({
   onClick,
   style,
   title,
-}) => {
-  return (
-    <NativeButton
-      accessibilityLabel={`${title} button`}
-      icon={<Icon name={iconName.replace('_', '-')} size={15} color="white" />}
-      style={style}
-      onPress={onClick}
-      title={title}
-    />
-  );
-};
+}) => (
+  <NativeButton
+    accessibilityLabel={`${title} button`}
+    icon={<Icon name={iconName.replace('_', '-')} size={15} color="white" />}
+    buttonStyle={{ ...style, margin: 5 }}
+    onPress={onClick}
+    title={title}
+  />
+);
 
 export default IconButton;
