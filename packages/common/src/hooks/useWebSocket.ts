@@ -45,7 +45,6 @@ const useWebSocket = (
     };
     webSocketRef.current.onclose = (event: WebSocketEventMap['close']) => {
       if (onClose) onClose(event);
-      console.log('closed', webSocketRef.current?.readyState);
       setReadyState(webSocketRef.current?.readyState || ReadyState.CLOSED);
     };
     webSocketRef.current.onmessage = (event: WebSocketEventMap['message']) => {
@@ -54,7 +53,6 @@ const useWebSocket = (
   }, [url, onClose, onError, onMessage, onOpen, retryOnError]);
 
   useEffect(() => {
-    console.log('useEffect', shouldConnect, readyState !== ReadyState.OPEN);
     if (shouldConnect && readyState !== ReadyState.OPEN) {
       if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
       reconnectTimesRef.current = 0;
@@ -65,7 +63,8 @@ const useWebSocket = (
   const disconnect = useCallback(() => {
     if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
     webSocketRef.current?.close();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [readyState]);
 
   useEffect(() => {
     return () => {

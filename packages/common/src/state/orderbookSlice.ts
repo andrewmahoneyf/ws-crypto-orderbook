@@ -5,8 +5,9 @@ import { GROUP_OPTIONS } from '../constants/orderBook';
 import { OrderbookReduxState } from '../types/orderBook';
 
 const initialState: OrderbookReduxState = {
-  pair: CryptoUSDPair.BTC,
+  enabled: true,
   grouping: 0.5,
+  pair: CryptoUSDPair.BTC,
 };
 
 export const orderbookSlice = createSlice({
@@ -22,9 +23,13 @@ export const orderbookSlice = createSlice({
     setGrouping: (state, action: PayloadAction<number>) => {
       state.grouping = action.payload;
     },
+    setOrderbookEnabled: (state, action: PayloadAction<boolean>) => {
+      state.enabled = action.payload;
+    },
   },
 });
 
-export const { toggleFeed, setGrouping } = orderbookSlice.actions;
+export const { toggleFeed, setGrouping, setOrderbookEnabled } =
+  orderbookSlice.actions;
 
 export default orderbookSlice.reducer;

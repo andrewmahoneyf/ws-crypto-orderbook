@@ -6,8 +6,12 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import { useAppSelector } from '../../hooks/react-redux';
-import { selectOrderbookPair } from '../../state/selectors';
+import { useAppSelector, useAppDispatch } from '../../hooks/react-redux';
+import {
+  selectOrderbookEnabled,
+  selectOrderbookPair,
+} from '../../state/selectors';
+import { setOrderbookEnabled } from '../../state/orderbookSlice';
 import { useInterval, useWebSocket } from '../../hooks';
 import {
   CONTEXT_INITIAL_STATE,
@@ -16,9 +20,9 @@ import {
   ORDER_WS_URL,
   RERENDER_FREQUENCY,
 } from '../../constants/orderBook';
-import { ContextUpdater } from '../../types/orderBook';
-import { Options } from '../../types/webSocket';
-import { ReadyState, WebSocketEvent } from '../../constants/enums';
+import { ContextUpdater, OrderBookMessage } from '../../types/orderBook';
+import { Options, WsEvent } from '../../types/webSocket';
+import { EventType, ReadyState, WebSocketEvent } from '../../constants/enums';
 import parseOrderMessage from '../../utils/parseOrderMessage';
 import reduceOrders from '../../utils/reduceOrders';
 
@@ -30,9 +34,10 @@ interface OrderBookProviderProps {
 
 const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   const selectedPair = useAppSelector(selectOrderbookPair);
+  const orderbookEnabled = useAppSelector(selectOrderbookEnabled);
   const contextRef = useRef(CONTEXT_INITIAL_STATE);
-  const [shouldConnect, setShouldConnect] = useState(false);
   const [renderKey, setRenderKey] = useState(0);
+  const dispatch = useAppDispatch();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const context = useMemo(() => contextRef.current, [renderKey]);
 
@@ -42,14 +47,39 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     setRenderKey(Math.random());
   }, RERENDER_FREQUENCY);
 
+  useEffect(() => {
+    // wait for component to mount before instantiating
+    dispatch(setOrderbookEnabled(true));
+  }, [dispatch]);
+
   const setContext = (values: ContextUpdater) => {
     contextRef.current = { ...contextRef.current, ...values };
   };
 
-  useEffect(() => {
-    // wait for component to mount before instantiating
-    setShouldConnect(true);
-    setContext({ setShouldConnect });
+  const handleOrderMessage = useCallback((orders: OrderBookMessage) => {
+    const { asks, bids, numLevels, product_id: productId } = orders;
+    const { asks: currAsks, bids: currBids } = contextRef.current;
+    setContext({
+      asks: reduceOrders(currAsks, asks ?? []),
+      bids: reduceOrders(currBids, bids ?? []),
+      error: null,
+      productId,
+      ...(numLevels && { numLevels }),
+    });
+    // trigger re-render on first valid data received
+    if (numLevels) setRenderKey(Math.random());
+  }, []);
+
+  const handleEventMessage = useCallback((data?: WsEvent) => {
+    console.log('onMessage', data);
+    if (data?.event === EventType.SUBSCRIBED) {
+      // clear context and render app on subscribe for toggle feed
+      setContext({
+        bids: CONTEXT_INITIAL_STATE.bids,
+        asks: CONTEXT_INITIAL_STATE.asks,
+      });
+      setRenderKey(Math.random());
+    }
   }, []);
 
   const onOpen = useCallback((event: WebSocketEventMap['open']) => {
@@ -59,42 +89,23 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
 
   const onClose = useCallback((event: WebSocketEventMap['close']) => {
     console.log('onClose', event);
-    // avoid overriding setShouldConnect so we can trigger reconnect externally
-    setContext({ ...CONTEXT_INITIAL_STATE, setShouldConnect });
+    setContext(CONTEXT_INITIAL_STATE);
     setRenderKey(Math.random());
   }, []);
 
-  const onMessage = useCallback((event: WebSocketEventMap['message']) => {
-    const parsedResult = parseOrderMessage(event.data);
-    if (parsedResult.error) setContext({ error: parsedResult.error?.message });
-    else if (parsedResult.orders) {
-      const {
-        asks,
-        bids,
-        numLevels,
-        product_id: productId,
-      } = parsedResult.orders;
-      const { asks: currAsks, bids: currBids } = contextRef.current;
-      setContext({
-        asks: reduceOrders(currAsks, asks ?? []),
-        bids: reduceOrders(currBids, bids ?? []),
-        error: null,
-        productId,
-        ...(numLevels && { numLevels }),
-      });
-      // trigger re-render on first valid data received
-      if (numLevels) setRenderKey(Math.random());
-    } else {
-      console.log('onMessage', event);
-      if (parsedResult.data?.event) {
-        setContext({
-          bids: CONTEXT_INITIAL_STATE.bids,
-          asks: CONTEXT_INITIAL_STATE.asks,
-        });
-        setRenderKey(Math.random());
+  const onMessage = useCallback(
+    (event: WebSocketEventMap['message']) => {
+      const parsedResult = parseOrderMessage(event.data);
+      if (parsedResult.error)
+        setContext({ error: parsedResult.error?.message });
+      else if (parsedResult.orders) {
+        handleOrderMessage(parsedResult.orders);
+      } else {
+        handleEventMessage(parsedResult.data);
       }
-    }
-  }, []);
+    },
+    [handleOrderMessage, handleEventMessage],
+  );
 
   const onError = useCallback((event: WebSocketEventMap['error']) => {
     console.log('onError', event);
@@ -110,7 +121,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   const { disconnect, readyState, sendMessage } = useWebSocket(
     ORDER_WS_URL,
     options,
-    shouldConnect,
+    orderbookEnabled,
   );
 
   const subscribe = useCallback(
@@ -140,27 +151,31 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   );
 
   useEffect(() => {
-    const handleDisconnect = () => {
-      unsubscribe();
-      disconnect();
-    };
-    setContext({ disconnect: handleDisconnect });
-  }, [disconnect, unsubscribe]);
-
-  useEffect(() => {
+    // add readyState to context on update
     setContext({ readyState: ReadyState[readyState] });
-    if (readyState === ReadyState.OPEN) {
-      subscribe();
-    }
+    if (readyState === ReadyState.OPEN) subscribe();
   }, [readyState, subscribe]);
 
   useEffect(() => {
+    // update subscriptions on toggle feed
     const { productId } = contextRef.current;
     if (productId !== selectedPair) {
       unsubscribe(productId);
       subscribe(selectedPair);
     }
   }, [selectedPair, subscribe, unsubscribe]);
+
+  useEffect(() => {
+    // trigger error if orderbook is manually disabled
+    const { ws } = contextRef.current;
+    if (!orderbookEnabled && ws) {
+      ws.dispatchEvent(new Event('error'));
+      if (DEFAULT_OPTIONS.retryOnError) {
+        unsubscribe();
+        disconnect();
+      }
+    }
+  }, [orderbookEnabled, unsubscribe, disconnect]);
 
   return (
     <OrderBookContext.Provider value={context}>

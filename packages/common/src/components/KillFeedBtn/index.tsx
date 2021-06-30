@@ -1,34 +1,20 @@
-import React, { useContext, useState, memo } from 'react';
-import { OrderBookContext } from '../OrderBookProvider';
+import React from 'react';
+import { useAppDispatch, useAppSelector } from '../../hooks/react-redux';
+import { selectOrderbookEnabled } from '../../state/selectors';
+import { setOrderbookEnabled } from '../../state/orderbookSlice';
 import IconButton from '../IconButton';
-import { ReadyState } from '../../constants/enums';
-import { DEFAULT_OPTIONS } from '../../constants/orderBook';
 
-const KillFeedBtn = memo((): JSX.Element => {
-  const [btnState, setBtnState] = useState('live');
-  const context = useContext(OrderBookContext);
-
-  const handleToggleFeed = () => {
-    const { disconnect, readyState, setShouldConnect, ws } = context;
-    if (readyState === ReadyState[ReadyState.OPEN]) {
-      setShouldConnect(false);
-      ws?.dispatchEvent(new Event('error'));
-      if (DEFAULT_OPTIONS.retryOnError) disconnect();
-      setBtnState('killed');
-    } else {
-      setShouldConnect(true);
-      setBtnState('live');
-    }
-  };
-
+const KillFeedBtn = (): JSX.Element => {
+  const dispatch = useAppDispatch();
+  const orderbookEnabled = useAppSelector(selectOrderbookEnabled);
   return (
     <IconButton
-      iconName={btnState === 'live' ? 'error_outline' : 'catching_pokemon'}
-      onClick={handleToggleFeed}
+      iconName={orderbookEnabled ? 'error_outline' : 'catching_pokemon'}
+      onClick={() => dispatch(setOrderbookEnabled(!orderbookEnabled))}
       style={{ backgroundColor: '#B91D1C' }}
-      title={btnState === 'live' ? 'Kill Feed' : 'Restart Feed'}
+      title={orderbookEnabled ? 'Kill Feed' : 'Restart Feed'}
     />
   );
-});
+};
 
 export default KillFeedBtn;

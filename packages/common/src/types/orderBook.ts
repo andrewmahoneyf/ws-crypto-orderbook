@@ -1,7 +1,7 @@
-import { Dispatch, SetStateAction } from 'react';
 import { CryptoUSDPair } from '../constants/enums';
 
 export interface OrderbookReduxState {
+  enabled: boolean;
   pair: CryptoUSDPair;
   grouping: number;
 }
@@ -19,12 +19,10 @@ export interface OrderLevel {
 export interface Context {
   asks: OrdersPriceMap;
   bids: OrdersPriceMap;
-  disconnect: () => void;
   error?: string | null;
   numLevels?: number;
   productId?: string;
   readyState: string;
-  setShouldConnect: Dispatch<SetStateAction<boolean>>;
   ws?: WebSocket;
 }
 
@@ -32,12 +30,10 @@ export interface Context {
 export interface ContextUpdater {
   asks?: OrdersPriceMap;
   bids?: OrdersPriceMap;
-  disconnect?: () => void;
   error?: string | null;
   numLevels?: number;
   productId?: string;
   readyState?: string;
-  setShouldConnect?: Dispatch<SetStateAction<boolean>>;
   ws?: WebSocket;
 }
 

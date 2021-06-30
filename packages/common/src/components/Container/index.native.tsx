@@ -6,8 +6,8 @@ interface ContainerProps {
   style?: ViewStyle;
 }
 
-const Container: React.FC<ContainerProps> = ({ children, style }) => {
-  return <View style={style}>{children}</View>;
-};
+const Container: React.FC<ContainerProps> = ({ children, style }) => (
+  <View style={style}>{children}</View>
+);
 
 export default Container;

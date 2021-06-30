@@ -1,6 +1,6 @@
 import { OrderBookMessage } from '../types/orderBook';
-
-type WsEvent = { event?: string; message?: string };
+import { WsEvent } from '../types/webSocket';
+import { EventType } from '../constants/enums';
 
 function isExpectedType(o: OrderBookMessage | WsEvent): o is OrderBookMessage {
   return 'asks' in o && 'bids' in o;
@@ -16,7 +16,7 @@ const parseJSON = (text: string): ParseResult => {
   try {
     const data = JSON.parse(text) as OrderBookMessage | WsEvent;
     if (isExpectedType(data)) return { orders: data };
-    if (data.event === 'alert') throw new Error(data.message);
+    if (data.event === EventType.ALERT) throw new Error(data.message);
     return { data };
   } catch (err) {
     return {

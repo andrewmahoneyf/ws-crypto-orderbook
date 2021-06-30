@@ -20,3 +20,9 @@ export enum OrderType {
   BIDS = 'bids',
   ASKS = 'asks',
 }
+
+export enum EventType {
+  SUBSCRIBED = 'subscribed',
+  UNSUBSCRIBED = 'unsubscribed',
+  ALERT = 'alert',
+}

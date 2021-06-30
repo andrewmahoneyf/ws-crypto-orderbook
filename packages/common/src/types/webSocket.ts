@@ -24,3 +24,5 @@ export interface WebSocketHook {
   readyState: ReadyState;
   sendMessage: SendMessage;
 }
+
+export type WsEvent = { event?: string; message?: string };
