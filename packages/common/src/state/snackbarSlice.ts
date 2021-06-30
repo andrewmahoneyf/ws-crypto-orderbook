@@ -2,27 +2,29 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Snackbar } from '../constants/enums';
 
+type Alert = { type: Snackbar; message: string };
+
 interface SnackbarReduxState {
-  alert?: { type?: Snackbar; message?: string };
+  alerts: Alert[];
 }
 
 const initialState: SnackbarReduxState = {
-  alert: undefined,
+  alerts: [],
 };
 
 export const snackbarSlice = createSlice({
   name: 'snackbar',
   initialState,
   reducers: {
-    setSnackbarAlert: (
-      state,
-      action: PayloadAction<SnackbarReduxState['alert']>,
-    ) => {
-      state.alert = action.payload;
+    addSnackbarAlert: (state, action: PayloadAction<Alert>) => {
+      state.alerts = [...state.alerts, action.payload];
+    },
+    setSnackbarAlerts: (state, action: PayloadAction<Alert[]>) => {
+      state.alerts = action.payload;
     },
   },
 });
 
-export const { setSnackbarAlert } = snackbarSlice.actions;
+export const { addSnackbarAlert, setSnackbarAlerts } = snackbarSlice.actions;
 
 export default snackbarSlice.reducer;

@@ -12,7 +12,7 @@ import {
   selectOrderbookPair,
 } from '../../state/selectors';
 import { setOrderbookEnabled } from '../../state/orderbookSlice';
-import { setSnackbarAlert } from '../../state/snackbarSlice';
+import { addSnackbarAlert } from '../../state/snackbarSlice';
 import { useInterval, useWebSocket } from '../../hooks';
 import {
   CONTEXT_INITIAL_STATE,
@@ -88,7 +88,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
         });
         setRenderKey(Math.random());
         dispatch(
-          setSnackbarAlert({
+          addSnackbarAlert({
             type: Snackbar.SUCCESS,
             message: `Subscribed to ${data.product_ids?.toString() as string}`,
           }),
@@ -96,7 +96,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
       }
       if (data?.event === EventType.UNSUBSCRIBED) {
         dispatch(
-          setSnackbarAlert({
+          addSnackbarAlert({
             type: Snackbar.INFO,
             message: `Unsubscribed from ${
               data.product_ids?.toString() as string
@@ -112,7 +112,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
     (event: WebSocketEventMap['open']) => {
       setContext({ ws: event.currentTarget as WebSocket });
       dispatch(
-        setSnackbarAlert({
+        addSnackbarAlert({
           type: Snackbar.INFO,
           message: 'Orderbook websocket opened',
         }),
@@ -126,7 +126,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
       setContext(CONTEXT_INITIAL_STATE);
       setRenderKey(Math.random());
       dispatch(
-        setSnackbarAlert({
+        addSnackbarAlert({
           type: Snackbar.WARNING,
           message: `Orderbook websocket closed: ${StatusCode[event.code]}`,
         }),
@@ -140,7 +140,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
       const parsedResult = parseOrderMessage(event.data);
       if (parsedResult.error)
         dispatch(
-          setSnackbarAlert({
+          addSnackbarAlert({
             type: Snackbar.ERROR,
             message: parsedResult.error?.message,
           }),
@@ -157,7 +157,7 @@ const OrderBookProvider: React.FC<OrderBookProviderProps> = ({ children }) => {
   const onError = useCallback(
     (event: WebSocketEventMap['error']) => {
       dispatch(
-        setSnackbarAlert({
+        addSnackbarAlert({
           type: Snackbar.ERROR,
           message: 'Unknown error occured',
         }),
